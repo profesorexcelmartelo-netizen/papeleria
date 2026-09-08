@@ -20,16 +20,21 @@ const pool = mysql.createPool({
 
 // ── MIDDLEWARE ──
 app.use(express.json({ limit: '10mb' }));
-// CORS — permitir todo
+
+// CORS — primero antes de todo
 app.use(function(req, res, next) {
-  res.header('Access-Control-Allow-Origin', '*');
-  res.header('Access-Control-Allow-Methods', 'GET,POST,PUT,PATCH,DELETE,OPTIONS');
-  res.header('Access-Control-Allow-Headers', 'Content-Type,Authorization,x-api-key');
-  if (req.method === 'OPTIONS') return res.sendStatus(200);
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'GET,POST,PUT,PATCH,DELETE,OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type,Authorization,x-api-key,Accept');
+  res.setHeader('Access-Control-Max-Age', '86400');
+  if (req.method === 'OPTIONS') {
+    res.status(204).end();
+    return;
+  }
   next();
 });
-app.use(cors({ origin: '*' }));
-app.use(rateLimit({ windowMs: 60*1000, max: 300 }));
+
+app.use(rateLimit({ windowMs: 60*1000, max: 500 }));
 
 // ── HEALTH ──
 app.get('/api/health', async (req, res) => {
