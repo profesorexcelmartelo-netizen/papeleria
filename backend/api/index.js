@@ -20,11 +20,15 @@ const pool = mysql.createPool({
 
 // ── MIDDLEWARE ──
 app.use(express.json({ limit: '10mb' }));
-app.use(cors({
-  origin: '*',
-  methods: ['GET','POST','PUT','PATCH','DELETE','OPTIONS'],
-  allowedHeaders: ['Content-Type','Authorization','x-api-key']
-}));
+// CORS — permitir todo
+app.use(function(req, res, next) {
+  res.header('Access-Control-Allow-Origin', '*');
+  res.header('Access-Control-Allow-Methods', 'GET,POST,PUT,PATCH,DELETE,OPTIONS');
+  res.header('Access-Control-Allow-Headers', 'Content-Type,Authorization,x-api-key');
+  if (req.method === 'OPTIONS') return res.sendStatus(200);
+  next();
+});
+app.use(cors({ origin: '*' }));
 app.use(rateLimit({ windowMs: 60*1000, max: 300 }));
 
 // ── HEALTH ──
@@ -36,6 +40,11 @@ app.get('/api/health', async (req, res) => {
     res.status(500).json({ status: 'error', db: e.message });
   }
 });
+
+// Ping para mantener conexión activa
+setInterval(async () => {
+  try { await pool.query('SELECT 1'); } catch(e) { console.log('DB ping error:', e.message); }
+}, 30000);
 
 // ════════════════════════════════
 // PRODUCTOS
