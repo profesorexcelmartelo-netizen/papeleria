@@ -186,7 +186,7 @@ tr.anulada-row td{opacity:.55}tr.anulada-row{background:#fff5f5!important}
     <div style="font-size:13px;color:#7090BB;margin-top:4px">Ingresa tu PIN para continuar</div>
   </div>
   <div style="background:rgba(255,255,255,.05);border:1px solid rgba(0,102,255,.3);border-radius:16px;padding:32px 40px;text-align:center;min-width:300px">
-    <div id="pin-display" style="min-height:50px;background:rgba(0,0,0,.3);border-radius:8px;padding:14px 16px;min-width:260px;text-align:center;display:flex;align-items:center;justify-content:center;margin-bottom:24px;gap:4px">&nbsp;</div>
+    <div id="pin-display" style="font-size:28px;color:#fff;letter-spacing:8px;min-height:54px;background:rgba(0,0,0,.3);border-radius:8px;padding:12px 20px;min-width:260px;text-align:center;margin-bottom:24px;line-height:normal"></div>
     <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:10px">
       <button class="pin-btn" type="button" onclick="pinPress('1')">1</button>
       <button class="pin-btn" type="button" onclick="pinPress('2')">2</button>
@@ -491,62 +491,42 @@ var pinActivo=true;
 function pinActualizar(){
   var d=document.getElementById('pin-display');
   if(!d)return;
-  if(pinValue.length===0){d.innerHTML='&nbsp;';return;}
-  var h='';
-  for(var i=0;i<pinValue.length;i++){
-    h+='<span style="display:inline-block;width:14px;height:14px;background:#fff;border-radius:50%;margin:0 3px"></span>';
-  }
-  d.innerHTML=h;
+  d.textContent=pinValue.length===0?'':pinValue.replace(/./g,'● ').trim();
 }
-
 function pinPress(n){
-  if(!pinActivo)return;
-  if(pinValue.length>=10)return;
+  if(!pinActivo||pinValue.length>=10)return;
   pinValue+=n;
   pinActualizar();
   document.getElementById('pin-error').textContent='';
-  if(pinValue.length===APP_PIN.length){
-    setTimeout(function(){pinEnter();},200);
-  }
+  if(pinValue.length===APP_PIN.length)setTimeout(pinEnter,200);
 }
-
 function pinClear(){
   if(!pinActivo)return;
   pinValue=pinValue.slice(0,-1);
   pinActualizar();
   document.getElementById('pin-error').textContent='';
 }
-
 function pinEnter(){
   if(!pinActivo)return;
   if(pinValue===APP_PIN){
     pinActivo=false;
     var ps=document.getElementById('pin-screen');
-    ps.style.transition='opacity 0.4s';
-    ps.style.opacity='0';
-    setTimeout(function(){
-      ps.style.display='none';
-      initApp();
-    },400);
+    ps.style.opacity='0';ps.style.transition='opacity 0.4s';
+    setTimeout(function(){ps.style.display='none';initApp();},400);
   }else{
     document.getElementById('pin-error').textContent='PIN incorrecto';
-    pinValue='';
-    pinActualizar();
+    pinValue='';pinActualizar();
   }
 }
-
 function salir(){
-  if(confirm('¿Seguro que deseas cerrar sesión?')){
-    pinActivo=true;
-    pinValue='';
+  if(confirm('¿Cerrar sesión?')){
+    pinActivo=true;pinValue='';
     var ps=document.getElementById('pin-screen');
-    ps.style.display='flex';
-    ps.style.opacity='1';
+    ps.style.display='flex';ps.style.opacity='1';
     pinActualizar();
     document.getElementById('pin-error').textContent='';
   }
 }
-// salir ya definido arriba
 
 /* ═══ API HELPERS ═══ */
 function showLoading(msg){
@@ -1582,7 +1562,6 @@ document.addEventListener('DOMContentLoaded',function(){
   document.querySelectorAll('.modal-overlay').forEach(function(ov){
     ov.addEventListener('click',function(e){if(e.target===ov)closeModal(ov.id)});
   });
-  // Teclado para PIN - dentro de DOMContentLoaded para que el DOM exista
   document.addEventListener('keydown',function(e){
     if(!pinActivo)return;
     if(e.key>='0'&&e.key<='9'){e.preventDefault();pinPress(e.key);}
