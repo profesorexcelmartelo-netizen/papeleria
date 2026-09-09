@@ -971,6 +971,7 @@ async function loadCajaVentas(){
     }
     if(totalResumen.totalVendido>0)totalResumen.pct=(totalResumen.utilidad/totalResumen.totalVendido)*100;
     var ventas=todasVentas;
+    _cajaVentasCache=ventas;
     var resumen=totalResumen;
     document.getElementById('sum-total').textContent=fmt(resumen.totalVendido||0);
     document.getElementById('sum-utilidad').textContent=fmt(resumen.utilidad||0);
@@ -1069,10 +1070,8 @@ function exportarExcelCaja(){
   var estadoFiltro=document.getElementById('caja-estado').value;
 
   showLoading('Generando Excel...');
-  var url='/ventas?fecha_from='+dateFrom+'&fecha_to='+dateTo;
-  if(estadoFiltro!=='todas')url+='&estado='+estadoFiltro;
-
-  apiGet(url).then(function(ventas){
+  var ventas = _cajaVentasCache || [];
+  Promise.resolve(ventas).then(function(ventas){
     hideLoading();
     if(!ventas.length){toast('Sin ventas en el período seleccionado','error');return;}
 
@@ -1163,7 +1162,8 @@ function exportarResumenMetodos(){
   var msg=cfg.mensaje_tirilla||cfg.mensajeTirilla||'';
 
   // Obtener ventas del período filtrado
-  apiGet('/ventas?fecha_from='+dateFrom+'&fecha_to='+dateTo+'&estado=aceptada').then(function(ventas){
+  var filterV = (_cajaVentasCache||[]).filter(function(v){return (v.estado||'aceptada')==='aceptada'});
+  Promise.resolve(filterV).then(function(ventas){
     if(!ventas.length){toast('Sin ventas aceptadas en el período','error');return;}
 
     // Calcular totales
@@ -1216,8 +1216,12 @@ function exportarResumenMetodos(){
     if(tel)al('Tel: '+tel,7,false,true);
     y+=1;sep();
     al('CIERRE DE CAJA',9,true,true);
-    var periodo=dateFrom===dateTo?dateFrom:dateFrom+' al '+dateTo;
-    al('Período: '+periodo,7,false,true);
+    if(dateFrom===dateTo){
+      al('Fecha: '+dateFrom,7,false,true);
+    }else{
+      al('Fecha Inicio: '+dateFrom,7,false,true);
+      al('Fecha Fin: '+dateTo,7,false,true);
+    }
     al('Ventas aceptadas: '+ventas.length,7,false,true);
     y+=1;sep();
 
