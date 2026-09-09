@@ -1124,6 +1124,7 @@ function exportarExcelCaja(){
       if(typeof mp==='string')try{mp=JSON.parse(mp||'[]')}catch(e){mp=[]}
       if(mp&&mp.length){
         mp.forEach(function(r){byM[r.metodo]=(byM[r.metodo]||0)+parseFloat(r.monto||0);byMCount[r.metodo]=(byMCount[r.metodo]||0)+1});
+        if(parseFloat(v.cambio)>0) byM['Efectivo']=(byM['Efectivo']||0)-parseFloat(v.cambio);
       }else{
         var m=v.metodo_pago||'Efectivo';
         byM[m]=(byM[m]||0)+parseFloat(v.total||0);byMCount[m]=(byMCount[m]||0)+1;
@@ -1177,6 +1178,7 @@ function exportarResumenMetodos(){
           byMethod[r.metodo]=(byMethod[r.metodo]||0)+parseFloat(r.monto||0);
           byMethodCount[r.metodo]=(byMethodCount[r.metodo]||0)+1;
         });
+        if(parseFloat(v.cambio)>0) byMethod['Efectivo']=(byMethod['Efectivo']||0)-parseFloat(v.cambio);
       }else{
         var m=v.metodo_pago||'Efectivo';
         byMethod[m]=(byMethod[m]||0)+parseFloat(v.total||0);
