@@ -148,10 +148,20 @@ tr.anulada-row td{opacity:.55}tr.anulada-row{background:#fff5f5!important}
 .loading-overlay.show{display:flex}
 .spinner{width:40px;height:40px;border:4px solid rgba(255,255,255,.2);border-top-color:#fff;border-radius:50%;animation:spin .8s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
-@media print{body *{visibility:hidden}#print-area,#print-area *{visibility:visible}#print-area{position:fixed;top:0;left:0;width:80mm;font-family:'Courier New',monospace;font-size:11px;color:#000}}
-.print-ticket{font-family:'Courier New',monospace;width:80mm;font-size:11px;line-height:1.4}
-.print-ticket .t-center{text-align:center}.print-ticket .t-bold{font-weight:bold}.print-ticket .t-big{font-size:14px}
-.print-ticket .t-sep{border-top:1px dashed #000;margin:3px 0}.print-ticket .t-row{display:flex;justify-content:space-between}
+@media print{
+  @page{size:80mm auto;margin:3mm 2mm}
+  body *{visibility:hidden}
+  #print-area,#print-area *{visibility:visible}
+  #print-area{position:fixed;top:0;left:0;width:76mm}
+  .no-print{display:none!important}
+}
+.print-ticket{font-family:'Courier New',monospace;width:76mm;font-size:12px;line-height:1.6;color:#000}
+.print-ticket .t-center{text-align:center}
+.print-ticket .t-bold{font-weight:bold}
+.print-ticket .t-big{font-size:16px;font-weight:bold}
+.print-ticket .t-sep{border:none;border-top:1px dashed #000;margin:5px 0;display:block}
+.print-ticket .t-row{display:flex;justify-content:space-between;width:100%}
+.print-ticket p{margin:1px 0;font-size:12px}
 /* PIN */
 .pin-btn{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);color:#fff;font-size:20px;font-weight:700;border-radius:10px;padding:16px;cursor:pointer;transition:all .15s;font-family:'Segoe UI',sans-serif}
 .pin-btn:hover{background:rgba(0,102,255,.4);border-color:#0066FF}
@@ -747,25 +757,80 @@ async function processSale(){
 
 function printTicket(venta){
   var cfg=configCache;
-  var h='<div class="print-ticket">';
-  if(cfg.logo)h+='<img src="'+cfg.logo+'" style="max-width:100%;max-height:48px;display:block;margin:0 auto 3px">';
-  h+='<p class="t-center t-bold" style="font-size:13px">'+(cfg.nombre_negocio||cfg.nombreNegocio||'Mi Papelería')+'</p>';
-  h+='<p class="t-center">'+(cfg.direccion||'')+'</p><p class="t-center">Tel:'+(cfg.telefono||'')+'</p>';
-  h+='<p class="t-center">'+venta.fecha+' '+venta.hora+'</p>';
-  h+='<p class="t-center">'+venta.folio+'</p><p class="t-center">'+venta.cliente+'</p>';
-  h+='<div class="t-sep"></div>';
-  venta.productos.forEach(function(p){h+='<div>'+(p.nombre||p.nombre)+'</div><div class="t-row"><span>'+(p.cantidad||p.cantidad)+' x '+fmt(p.precioUnitario||p.precio_unitario)+'</span><span>'+fmt(p.subtotal)+'</span></div>'});
-  h+='<div class="t-sep"></div>';
-  h+='<div class="t-row t-bold t-big"><span>TOTAL</span><span>'+fmt(venta.total)+'</span></div>';
+  var nombre=cfg.nombre_negocio||cfg.nombreNegocio||'Mi Papelería';
+  var dir=cfg.direccion||'';
+  var tel=cfg.telefono||'';
+  var msg=cfg.mensaje_tirilla||cfg.mensajeTirilla||'¡Gracias por su compra!';
+
   var mp=venta.metodosPago||venta.metodos_pago||[];
-  if(mp.length)mp.forEach(function(r){h+='<p>'+(r.metodo||r)+': '+fmt(r.monto||0)+'</p>'});
-  else h+='<p>Pago: '+venta.metodoPago+'</p>';
-  if(venta.cambio>0)h+='<p>Cambio: '+fmt(venta.cambio)+'</p>';
-  if(venta.observaciones)h+='<p>Obs: '+venta.observaciones+'</p>';
-  h+='<div class="t-sep"></div><p class="t-center">'+(cfg.mensaje_tirilla||cfg.mensajeTirilla||'¡Gracias!')+'</p></div>';
-  var pa=document.getElementById('print-area');pa.innerHTML=h;pa.style.display='block';window.print();pa.style.display='none';
+  if(typeof mp==='string'){try{mp=JSON.parse(mp)}catch(e){mp=[]}}
+  var pagoHtml='';
+  if(mp&&mp.length>0)mp.forEach(function(r){pagoHtml+='<p>'+r.metodo+': '+fmt(r.monto||0)+'</p>'});
+  else pagoHtml='<p>Pago: '+(venta.metodoPago||'')+'</p>';
+
+  var prods=venta.productos||venta.venta_productos||[];
+
+  var w=window.open('','_blank','width=320,height=600,toolbar=0,menubar=0,location=0');
+  if(!w){toast('Permite popups para imprimir','error');return;}
+  w.document.write('<!DOCTYPE html><html><head><meta charset="UTF-8">');
+  w.document.write('<style>');
+  w.document.write('@page{size:80mm auto;margin:3mm 2mm}');
+  w.document.write('*{margin:0;padding:0;box-sizing:border-box}');
+  w.document.write('body{font-family:"Courier New",monospace;font-size:12pt;width:76mm;color:#000;line-height:1.6}');
+  w.document.write('.center{text-align:center}.bold{font-weight:bold}.big{font-size:16pt;font-weight:bold}');
+  w.document.write('.sep{border:none;border-top:1px dashed #000;margin:5px 0;display:block;width:100%}');
+  w.document.write('.row{display:flex;justify-content:space-between;width:100%}');
+  w.document.write('p{margin:1px 0}');
+  w.document.write('img{max-width:100%;max-height:50px;display:block;margin:0 auto 4px}');
+  w.document.write('</style></head><body>');
+
+  if(cfg.logo)w.document.write('<img src="'+cfg.logo+'">');
+  w.document.write('<p class="center bold" style="font-size:14pt">'+nombre+'</p>');
+  if(dir)w.document.write('<p class="center">'+dir+'</p>');
+  if(tel)w.document.write('<p class="center">Tel: '+tel+'</p>');
+  w.document.write('<p class="center">'+venta.fecha+' '+venta.hora+'</p>');
+  w.document.write('<p class="center bold">'+venta.folio+'</p>');
+  w.document.write('<p class="center">Cliente: '+venta.cliente+'</p>');
+  w.document.write('<hr class="sep">');
+
+  prods.forEach(function(p){
+    var nombre_p=p.nombre||'';
+    var cant=p.cantidad||0;
+    var pu=parseFloat(p.precioUnitario||p.precio_unitario||0);
+    var sub=parseFloat(p.subtotal||0);
+    w.document.write('<p>'+nombre_p+'</p>');
+    w.document.write('<div class="row"><span>'+cant+' x '+fmt(pu)+'</span><span>'+fmt(sub)+'</span></div>');
+  });
+
+  w.document.write('<hr class="sep">');
+  w.document.write('<div class="row big"><span>TOTAL</span><span>'+fmt(venta.total)+'</span></div>');
+  w.document.write('<hr class="sep">');
+  w.document.write(pagoHtml);
+  if(venta.cambio>0)w.document.write('<p>Cambio: '+fmt(venta.cambio)+'</p>');
+  if(venta.observaciones)w.document.write('<p>Obs: '+venta.observaciones+'</p>');
+  w.document.write('<hr class="sep">');
+  w.document.write('<p class="center">'+msg+'</p>');
+  w.document.write('<p class="center bold">¡Gracias por su compra!</p>');
+  w.document.write('</body></html>');
+  w.document.close();
+  w.onload=function(){
+    setTimeout(function(){w.print();w.close();},500);
+  };
+  if(w.document.readyState==='complete'){
+    setTimeout(function(){w.print();w.close();},600);
+  }
 }
-function reprintTicket(){if(currentSaleForReprint)printTicket(currentSaleForReprint)}
+function reprintTicket(){
+  if(!currentSaleForReprint)return;
+  var v=currentSaleForReprint;
+  // Normalizar productos — backend devuelve venta_productos
+  if(!v.productos&&v.venta_productos){
+    v.productos=v.venta_productos.map(function(p){
+      return{nombre:p.nombre,cantidad:p.cantidad,precioUnitario:p.precio_unitario,subtotal:p.subtotal};
+    });
+  }
+  printTicket(v);
+}
 
 /* ═══ CAJA ═══ */
 async function loadCajaVentas(){
@@ -854,7 +919,17 @@ async function verDetalleVenta(folio){
   }catch(e){toast('Error cargando detalle','error')}
 }
 async function reprintFromFolio(folio){
-  try{var v=await apiGet('/ventas/'+folio);currentSaleForReprint=v;printTicket(v)}catch(e){toast('Error','error')}
+  try{
+    var v=await apiGet('/ventas/'+folio);
+    currentSaleForReprint=v;
+    // Normalizar productos
+    if(!v.productos&&v.venta_productos){
+      v.productos=v.venta_productos.map(function(p){
+        return{nombre:p.nombre,cantidad:p.cantidad,precioUnitario:p.precio_unitario,subtotal:p.subtotal};
+      });
+    }
+    printTicket(v);
+  }catch(e){toast('Error al reimprimir: '+e.message,'error')}
 }
 
 function exportarVentas(){toast('Abriendo reporte...','info');window.open(API_BASE+'/ventas/resumen/'+document.getElementById('caja-date').value,'_blank')}
