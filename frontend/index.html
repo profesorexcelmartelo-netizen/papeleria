@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>POS Papelería</title>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
 <style>
 :root{
   --electric:#0066FF;--electric-dark:#0052CC;--electric-pale:#E8F0FF;--electric-mid:#B3CCFF;
@@ -1558,6 +1558,14 @@ async function removePayMethod(m){
     await saveBusinessData();renderPayMethods();toast('Eliminado','info');
   });
 }
+document.addEventListener('DOMContentLoaded',function(){
+  document.getElementById('caja-date-from').value=new Date().toISOString().slice(0,10);
+  document.getElementById('caja-date-to').value=new Date().toISOString().slice(0,10);
+  document.querySelectorAll('.modal-overlay').forEach(function(ov){
+    ov.addEventListener('click',function(e){if(e.target===ov)closeModal(ov.id)});
+  });
+});
 </script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js" defer></script>
 </body>
 </html>
