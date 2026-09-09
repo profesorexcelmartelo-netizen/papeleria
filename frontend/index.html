@@ -579,8 +579,8 @@ async function initApp(){
   }catch(e){toast('Error cargando config: '+e.message,'error')}
   await loadProductos();
   loadConfigUI();
-  document.getElementById('caja-date-from').value=new Date().toISOString().slice(0,10);
-  document.getElementById('caja-date-to').value=new Date().toISOString().slice(0,10);
+  document.getElementById('caja-date-from').value=todayStr();
+  document.getElementById('caja-date-to').value=todayStr();
   loadCajaVentas();
   initPayRows();
   hideLoading();
@@ -613,8 +613,9 @@ function confirmDlg(title,msg,cb){
   openModal('modal-confirm');
 }
 var fmt=function(n){return'$'+(+n||0).toLocaleString('es-MX',{minimumFractionDigits:2,maximumFractionDigits:2})};
-var fmtDate=function(iso){if(!iso)return'';var d=new Date(iso);return String(d.getDate()).padStart(2,'0')+'/'+String(d.getMonth()+1).padStart(2,'0')+'/'+d.getFullYear()};
-var todayStr=function(){return new Date().toISOString().slice(0,10)};
+var localDateStr=function(d){d=d||new Date();var tz=d.getTimezoneOffset()*60000;return new Date(d.getTime()-tz).toISOString().slice(0,10)};
+var fmtDate=function(iso){if(!iso)return'';var d=new Date(iso+'T12:00:00Z');return String(d.getDate()).padStart(2,'0')+'/'+String(d.getMonth()+1).padStart(2,'0')+'/'+d.getFullYear()};
+var todayStr=function(){return localDateStr()};
 
 /* ═══ NAV ═══ */
 function showModule(n){
@@ -736,19 +737,19 @@ async function processSale(){
     showLoading('Procesando venta...');
     try{
       var now=new Date();
-      var ds=now.toISOString().slice(0,10).replace(/-/g,'');
-      var ventas=await apiGet('/ventas?fecha='+now.toISOString().slice(0,10));
+      var ds=localDateStr(now).replace(/-/g,'');
+      var ventas=await apiGet('/ventas?fecha='+localDateStr(now));
       var folio='VENTA-'+ds+'-'+String(ventas.length+1).padStart(3,'0');
       var metodosStr=payRows.map(function(r){return r.metodo+': '+fmt(r.monto)}).join(' | ');
       var venta=await apiPost('/ventas',{
-        folio:folio,fecha:now.toISOString().slice(0,10),
+        folio:folio,fecha:localDateStr(now),
         hora:now.toTimeString().slice(0,8),
         cliente:cliente,observaciones:obs,
         metodo_pago:metodosStr,metodos_pago:payRows,
         total:total,cambio:cambio,
         productos:cart.map(function(c){return{codigo:c.codigo,nombre:c.nombre,cantidad:c.cantidad,precioUnitario:c.precioUnitario,subtotal:c.subtotal}})
       });
-      currentSaleForReprint={folio:folio,fecha:now.toISOString().slice(0,10),hora:now.toTimeString().slice(0,8),cliente:cliente,observaciones:obs,metodoPago:metodosStr,metodosPago:payRows,total:total,cambio:cambio,productos:cart.map(function(c){return Object.assign({},c)})};
+      currentSaleForReprint={folio:folio,fecha:localDateStr(now),hora:now.toTimeString().slice(0,8),cliente:cliente,observaciones:obs,metodoPago:metodosStr,metodosPago:payRows,total:total,cambio:cambio,productos:cart.map(function(c){return Object.assign({},c)})};
       printTicket(currentSaleForReprint);
       clearCart();document.getElementById('pos-obs').value='';
       await loadProductos();
@@ -955,7 +956,7 @@ async function loadCajaVentas(){
     var totalResumen={totalVendido:0,utilidad:0,pct:0,cantVentas:0};
     var curr=new Date(dateStart);
     while(curr<=dateEnd){
-      var d=curr.toISOString().slice(0,10);
+      var d=localDateStr(curr);
       var url='/ventas?fecha='+d;
       var dVentas=await apiGet(url).catch(function(){return []});
       var dRes=await apiGet('/ventas/resumen/'+d).catch(function(){return {totalVendido:0,utilidad:0,pct:0,cantVentas:0}});
@@ -1575,8 +1576,8 @@ async function removePayMethod(m){
   });
 }
 document.addEventListener('DOMContentLoaded',function(){
-  document.getElementById('caja-date-from').value=new Date().toISOString().slice(0,10);
-  document.getElementById('caja-date-to').value=new Date().toISOString().slice(0,10);
+  document.getElementById('caja-date-from').value=todayStr();
+  document.getElementById('caja-date-to').value=todayStr();
   document.querySelectorAll('.modal-overlay').forEach(function(ov){
     ov.addEventListener('click',function(e){if(e.target===ov)closeModal(ov.id)});
   });
