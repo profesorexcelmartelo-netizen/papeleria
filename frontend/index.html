@@ -948,10 +948,29 @@ async function loadCajaVentas(){
   if(!dateTo)dateTo=dateFrom;
   showLoading('Cargando ventas...');
   try{
-    var url='/ventas?fecha_from='+dateFrom+'&fecha_to='+dateTo;
-    if(estadoFiltro!=='todas')url+='&estado='+estadoFiltro;
-    var ventas=await apiGet(url);
-    var resumen=await apiGet('/ventas/resumen/'+dateFrom+'/'+dateTo);
+    var dateStart=new Date(dateFrom+'T12:00:00Z');
+    var dateEnd=new Date(dateTo+'T12:00:00Z');
+    if(dateEnd<dateStart)dateEnd=dateStart;
+    var todasVentas=[];
+    var totalResumen={totalVendido:0,utilidad:0,pct:0,cantVentas:0};
+    var curr=new Date(dateStart);
+    while(curr<=dateEnd){
+      var d=curr.toISOString().slice(0,10);
+      var url='/ventas?fecha='+d;
+      var dVentas=await apiGet(url).catch(function(){return []});
+      var dRes=await apiGet('/ventas/resumen/'+d).catch(function(){return {totalVendido:0,utilidad:0,pct:0,cantVentas:0}});
+      if(dVentas&&dVentas.length){
+        if(estadoFiltro!=='todas'){dVentas=dVentas.filter(function(v){return (v.estado||'aceptada')===estadoFiltro});}
+        todasVentas=todasVentas.concat(dVentas);
+      }
+      totalResumen.totalVendido+=parseFloat(dRes.totalVendido||0);
+      totalResumen.utilidad+=parseFloat(dRes.utilidad||0);
+      totalResumen.cantVentas+=parseInt(dRes.cantVentas||0);
+      curr.setDate(curr.getDate()+1);
+    }
+    if(totalResumen.totalVendido>0)totalResumen.pct=(totalResumen.utilidad/totalResumen.totalVendido)*100;
+    var ventas=todasVentas;
+    var resumen=totalResumen;
     document.getElementById('sum-total').textContent=fmt(resumen.totalVendido||0);
     document.getElementById('sum-utilidad').textContent=fmt(resumen.utilidad||0);
     document.getElementById('sum-pct').textContent=(resumen.pct||0).toFixed(2)+'%';
