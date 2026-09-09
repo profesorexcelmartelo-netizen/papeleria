@@ -190,16 +190,16 @@ tr.anulada-row td{opacity:.55}tr.anulada-row{background:#fff5f5!important}
     <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:10px">
       <button class="pin-btn" type="button" onclick="pinPress('1')">1</button>
       <button class="pin-btn" type="button" onclick="pinPress('2')">2</button>
-      <button class="pin-btn" onclick="pinPress('3')">3</button>
-      <button class="pin-btn" onclick="pinPress('4')">4</button>
-      <button class="pin-btn" onclick="pinPress('5')">5</button>
-      <button class="pin-btn" onclick="pinPress('6')">6</button>
-      <button class="pin-btn" onclick="pinPress('7')">7</button>
-      <button class="pin-btn" onclick="pinPress('8')">8</button>
-      <button class="pin-btn" onclick="pinPress('9')">9</button>
-      <button class="pin-btn pin-btn-clear" onclick="pinClear()">⌫ Borrar</button>
-      <button class="pin-btn" onclick="pinPress('0')">0</button>
-      <button class="pin-btn pin-btn-enter" onclick="pinEnter()">✓</button>
+      <button class="pin-btn" type="button" onclick="pinPress('3')">3</button>
+      <button class="pin-btn" type="button" onclick="pinPress('4')">4</button>
+      <button class="pin-btn" type="button" onclick="pinPress('5')">5</button>
+      <button class="pin-btn" type="button" onclick="pinPress('6')">6</button>
+      <button class="pin-btn" type="button" onclick="pinPress('7')">7</button>
+      <button class="pin-btn" type="button" onclick="pinPress('8')">8</button>
+      <button class="pin-btn" type="button" onclick="pinPress('9')">9</button>
+      <button class="pin-btn pin-btn-clear" type="button" onclick="pinClear()">⌫ Borrar</button>
+      <button class="pin-btn" type="button" onclick="pinPress('0')">0</button>
+      <button class="pin-btn pin-btn-enter" type="button" onclick="pinEnter()">✓</button>
     </div>
     <div id="pin-error" style="color:#E53935;font-size:12px;font-weight:700;min-height:18px;margin-top:8px"></div>
   </div>
@@ -515,10 +515,11 @@ function pinEnter(){
   }
 }
 document.addEventListener('keydown',function(e){
-  if(document.getElementById('pin-screen').style.display==='none')return;
-  if(e.key>='0'&&e.key<='9')pinPress(e.key);
-  else if(e.key==='Backspace')pinClear();
-  else if(e.key==='Enter')pinEnter();
+  var ps=document.getElementById('pin-screen');
+  if(!ps||ps.style.display==='none'||ps.style.opacity==='0')return;
+  if(e.key>='0'&&e.key<='9'){e.preventDefault();pinPress(e.key);}
+  else if(e.key==='Backspace'){e.preventDefault();pinClear();}
+  else if(e.key==='Enter'){e.preventDefault();pinEnter();}
 });
 function salir(){
   if(confirm('¿Seguro que deseas cerrar sesión?')){
