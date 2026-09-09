@@ -136,13 +136,11 @@ app.post('/api/productos/importar', async (req, res) => {
 // ════ VENTAS ════
 app.get('/api/ventas', async (req, res) => {
   try {
-    const { fecha, fecha_from, fecha_to, estado } = req.query;
+    const { fecha, estado } = req.query;
     let sql = 'SELECT * FROM ventas WHERE 1=1'; const p = [];
-    if (fecha)      { sql += ' AND fecha=?';            p.push(fecha); }
-    if (fecha_from) { sql += ' AND fecha >= ?';         p.push(fecha_from); }
-    if (fecha_to)   { sql += ' AND fecha <= ?';         p.push(fecha_to); }
-    if (estado)     { sql += ' AND estado=?';           p.push(estado); }
-    sql += ' ORDER BY fecha ASC, created_at ASC';
+    if (fecha)  { sql += ' AND fecha=?';  p.push(fecha); }
+    if (estado) { sql += ' AND estado=?'; p.push(estado); }
+    sql += ' ORDER BY created_at DESC';
     const [ventas] = await pool.query(sql, p);
     for (const v of ventas) {
       const [prods] = await pool.query('SELECT * FROM venta_productos WHERE venta_id=?', [v.id]);
@@ -151,16 +149,6 @@ app.get('/api/ventas', async (req, res) => {
     }
     res.json(ventas);
   } catch(e) { res.status(500).json({ error: e.message }); }
-});
-
-app.get('/api/ventas/resumen/:fecha_from/:fecha_to', async (req, res) => {
-  try {
-    const { fecha_from, fecha_to } = req.params;
-    const [ventas] = await pool.query('SELECT * FROM ventas WHERE fecha >= ? AND fecha <= ? AND estado="aceptada"', [fecha_from, fecha_to]);
-    const totalVendido2 = ventas.reduce((s,v)=>s+parseFloat(v.total||0),0);
-    const byM2={};ventas.forEach(v=>{let mp=v.metodos_pago;try{if(typeof mp==='string')mp=JSON.parse(mp||'[]')}catch(e){mp=[]}(mp||[]).forEach(r=>{byM2[r.metodo]=(byM2[r.metodo]||0)+parseFloat(r.monto||0)})});
-    res.json({totalVendido:totalVendido2,byMethod:byM2,cantVentas:ventas.length});
-  } catch(e){res.status(500).json({error:e.message})}
 });
 
 app.get('/api/ventas/resumen/:fecha', async (req, res) => {
