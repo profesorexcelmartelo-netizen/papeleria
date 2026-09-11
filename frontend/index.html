@@ -787,14 +787,14 @@ function printTicket(venta){
   var cw=pw-margin*2; // ancho útil
   var doc=new jsPDF({unit:'mm',format:[pw,297],orientation:'portrait'});
 
-  doc.setFont('courier','normal');
+  doc.setFont('courier','bold');
   var y=margin;
   var lineH=4.5;
 
   function addLine(text,size,bold,center,right){
     size=size||8;bold=bold||false;center=center||false;right=right||false;
     doc.setFontSize(size);
-    doc.setFont('courier',bold?'bold':'normal');
+    doc.setFont('courier','bold');
     var x=margin;
     if(center)x=(pw-doc.getTextWidth(text))/2;
     if(right)x=pw-margin-doc.getTextWidth(text);
@@ -805,7 +805,7 @@ function printTicket(venta){
   function addRow(left,right,size,bold){
     size=size||8;bold=bold||false;
     doc.setFontSize(size);
-    doc.setFont('courier',bold?'bold':'normal');
+    doc.setFont('courier','bold');
     doc.text(left,margin,y);
     doc.text(right,pw-margin,y,{align:'right'});
     y+=lineH*(size/8);
@@ -824,7 +824,7 @@ function printTicket(venta){
     try{
       var imgW=40;var imgH=15;
       var imgX=(pw-imgW)/2;
-      doc.addImage(cfg.logo,'PNG',imgX,y,imgW,imgH);
+      doc.addImage(cfg.logo,'PNG',imgX,y,imgW,imgH,undefined,'FAST');
       y+=imgH+2;
     }catch(e){}
   }
@@ -847,7 +847,7 @@ function printTicket(venta){
     var pu=parseFloat(p.precioUnitario||p.precio_unitario||0);
     var sub=parseFloat(p.subtotal||0);
     // Nombre puede ser largo — wrap manual
-    doc.setFontSize(8);doc.setFont('courier','normal');
+    doc.setFontSize(8);doc.setFont('courier','bold');
     var lines=doc.splitTextToSize(np,cw);
     lines.forEach(function(l){addLine(l,8,false,false)});
     addRow(cant+' x '+fmt(pu),fmt(sub),8,false);
@@ -869,7 +869,7 @@ function printTicket(venta){
 
   y+=1;addSep();
   // Wrapping del mensaje
-  doc.setFontSize(7);doc.setFont('courier','normal');
+  doc.setFontSize(7);doc.setFont('courier','bold');
   var msgLines=doc.splitTextToSize(msg,cw);
   msgLines.forEach(function(l){
     doc.text(l,(pw-doc.getTextWidth(l))/2,y);y+=lineH*(7/8);
@@ -879,7 +879,7 @@ function printTicket(venta){
   // Recortar al alto real del contenido
   var finalH=y+margin;
   var doc2=new jsPDF({unit:'mm',format:[pw,finalH],orientation:'portrait'});
-  doc2.setFont('courier','normal');
+  doc2.setFont('courier','bold');
   // Re-generar en doc2 con altura exacta
   y=margin;
   doc2.setFontSize(10);
@@ -887,14 +887,14 @@ function printTicket(venta){
   // (Reutilizar mismas funciones apuntando a doc2)
   function al(text,size,bold,center){
     size=size||8;
-    doc2.setFontSize(size);doc2.setFont('courier',bold?'bold':'normal');
+    doc2.setFontSize(size);doc2.setFont('courier','bold');
     var x=margin;
     if(center)x=(pw-doc2.getTextWidth(text))/2;
     doc2.text(text,x,y);y+=lineH*(size/8);
   }
   function ar(left,right,size,bold){
     size=size||8;
-    doc2.setFontSize(size);doc2.setFont('courier',bold?'bold':'normal');
+    doc2.setFontSize(size);doc2.setFont('courier','bold');
     doc2.text(left,margin,y);doc2.text(right,pw-margin,y,{align:'right'});y+=lineH*(size/8);
   }
   function as2(){
@@ -902,7 +902,7 @@ function printTicket(venta){
     doc2.line(margin,y,pw-margin,y);y+=3;
   }
 
-  if(cfg.logo){try{var iW=40,iH=15,iX=(pw-iW)/2;doc2.addImage(cfg.logo,'PNG',iX,y,iW,iH);y+=iH+2;}catch(e){}}
+  if(cfg.logo){try{var iW=40,iH=15,iX=(pw-iW)/2;doc2.addImage(cfg.logo,'PNG',iX,y,iW,iH,undefined,'FAST');y+=iH+2;}catch(e){}}
   al(nombre,10,true,true);
   if(dir)al(dir,7,false,true);
   if(tel)al('Tel: '+tel,7,false,true);
@@ -913,7 +913,7 @@ function printTicket(venta){
     var np=p.nombre||'';var cant=parseInt(p.cantidad||0);
     var pu=parseFloat(p.precioUnitario||p.precio_unitario||0);
     var sub=parseFloat(p.subtotal||0);
-    doc2.setFontSize(8);doc2.setFont('courier','normal');
+    doc2.setFontSize(8);doc2.setFont('courier','bold');
     var lines=doc2.splitTextToSize(np,cw);
     lines.forEach(function(l){al(l,8,false,false)});
     ar(cant+' x '+fmt(pu),fmt(sub),8,false);y+=0.5;
@@ -925,7 +925,7 @@ function printTicket(venta){
   if(venta.cambio>0)al('Cambio: '+fmt(venta.cambio),8,false,false);
   if(venta.observaciones&&venta.observaciones.trim())al('Obs: '+venta.observaciones,7,false,false);
   y+=1;as2();
-  doc2.setFontSize(7);doc2.setFont('courier','normal');
+  doc2.setFontSize(7);doc2.setFont('courier','bold');
   var ml=doc2.splitTextToSize(msg,cw);
   ml.forEach(function(l){doc2.text(l,(pw-doc2.getTextWidth(l))/2,y);y+=lineH*(7/8)});
   // Mensaje solo desde configuración
@@ -1199,18 +1199,18 @@ function exportarResumenMetodos(){
 
     var pw=80;var margin=4;var cw=pw-margin*2;
     var doc=new jsPDF({unit:'mm',format:[pw,297],orientation:'portrait'});
-    doc.setFont('courier','normal');
+    doc.setFont('courier','bold');
     var y=margin;var lineH=4.5;
 
     function al(text,size,bold,center){
       size=size||8;
-      doc.setFontSize(size);doc.setFont('courier',bold?'bold':'normal');
+      doc.setFontSize(size);doc.setFont('courier','bold');
       var x=center?(pw-doc.getTextWidth(text))/2:margin;
       doc.text(text,x,y);y+=lineH*(size/8);
     }
     function ar(left,right,size,bold){
       size=size||8;
-      doc.setFontSize(size);doc.setFont('courier',bold?'bold':'normal');
+      doc.setFontSize(size);doc.setFont('courier','bold');
       doc.text(left,margin,y);doc.text(right,pw-margin,y,{align:'right'});y+=lineH*(size/8);
     }
     function sep(){
@@ -1219,7 +1219,7 @@ function exportarResumenMetodos(){
     }
 
     // Header
-    if(cfg.logo){try{doc.addImage(cfg.logo,'PNG',(pw-40)/2,y,40,15);y+=17;}catch(e){}}
+    if(cfg.logo){try{doc.addImage(cfg.logo,'PNG',(pw-40)/2,y,40,15,undefined,'FAST');y+=17;}catch(e){}}
     al(nombre,10,true,true);
     if(dir)al(dir,7,false,true);
     if(tel)al('Tel: '+tel,7,false,true);
@@ -1252,7 +1252,7 @@ function exportarResumenMetodos(){
     var idx=1;
     Object.entries(byMethod).forEach(function(e){
       var m=e[0];var t=e[1];var cnt=byMethodCount[m]||0;
-      doc.setFontSize(7);doc.setFont('courier','normal');
+      doc.setFontSize(7);doc.setFont('courier','bold');
       doc.text(idx+'. '+m,margin,y);
       doc.text(String(cnt),margin+35,y,{align:'right'});
       doc.text(fmt(t),pw-margin,y,{align:'right'});
@@ -1266,7 +1266,7 @@ function exportarResumenMetodos(){
     y+=lineH+1;sep();
 
     if(msg){
-      doc.setFontSize(7);doc.setFont('courier','normal');
+      doc.setFontSize(7);doc.setFont('courier','bold');
       var ml=doc.splitTextToSize(msg,cw);
       ml.forEach(function(l){doc.text(l,(pw-doc.getTextWidth(l))/2,y);y+=lineH*(7/8)});
     }
@@ -1275,7 +1275,7 @@ function exportarResumenMetodos(){
     var finalH=y+margin;
     var doc2=new jsPDF({unit:'mm',format:[pw,finalH],orientation:'portrait'});
     // Copiar páginas
-    doc2.setFont('courier','normal');
+    doc2.setFont('courier','bold');
     var pdfData=doc.output('arraybuffer');
     // Simplificado: guardar directo con altura estimada
     doc.save('CAJA_'+dateFrom+(dateFrom!==dateTo?'_al_'+dateTo:'')+'.pdf');
