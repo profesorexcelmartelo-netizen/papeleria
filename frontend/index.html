@@ -263,8 +263,8 @@ tr.anulada-row td{opacity:.55}tr.anulada-row{background:#fff5f5!important}
           <div class="multi-pay-list" id="multi-pay-list"></div>
           <div class="form-row"><label>Cliente</label><input type="text" id="pos-cliente" value="222222 - CLIENTE POS"></div>
           <div class="form-row"><label>Obs.</label><input type="text" id="pos-obs" placeholder="Observaciones..."></div>
-          <div class="form-row"><label>Paga con</label><input type="number" id="paga-con" placeholder="0.00" min="0" step="0.01" oninput="calcChange()"></div>
-          <div class="change-box"><span>Cambio / Vueltas</span><strong id="cambio-val">$0.00</strong></div>
+          <div class="form-row"><label>Paga con</label><input type="number" id="paga-con" placeholder="0.00" min="0" step="0.01" readonly style="background:var(--bg);color:var(--text-mid);cursor:not-allowed"></div>
+          <div class="change-box"><span id="lbl-cambio">Cambio / Vueltas</span><strong id="cambio-val">$0.00</strong></div>
           <button class="btn-pay" onclick="processSale()"><i class="fa-solid fa-check-circle"></i> PAGAR</button>
         </div>
       </div>
@@ -707,7 +707,17 @@ function updateTotal(){
 function calcChange(){
   var total=cart.reduce(function(s,c){return s+c.subtotal},0);
   var paga=parseFloat(document.getElementById('paga-con').value)||0;
-  document.getElementById('cambio-val').textContent=paga>=total?fmt(paga-total):'$0.00';
+  var cb=document.getElementById('cambio-val');
+  var lbl=document.getElementById('lbl-cambio');
+  if(total>0 && paga<total){
+    lbl.textContent='Faltante / Saldo';
+    cb.textContent=fmt(total-paga);
+    cb.style.color='var(--red)';
+  }else{
+    lbl.textContent='Cambio / Vueltas';
+    cb.textContent=fmt(paga-total);
+    cb.style.color='var(--electric)';
+  }
 }
 function initPayRows(){document.getElementById('multi-pay-list').innerHTML='';addPayRow()}
 function addPayRow(){
