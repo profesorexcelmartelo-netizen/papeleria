@@ -451,17 +451,19 @@ tr.anulada-row td{opacity:.55}tr.anulada-row{background:#fff5f5!important}
   <div class="modal" style="max-width:560px">
     <div class="modal-header"><span><i class="fa-solid fa-tag"></i> Configurar Etiquetas</span><button class="modal-close" onclick="closeModal('modal-etiquetas')"><i class="fa-solid fa-xmark"></i></button></div>
     <div class="modal-body">
-      <div class="lbl-cfg-grid" style="margin-bottom:12px">
-        <div class="form-group"><label>Ancho (mm)</label><input type="number" id="lbl-w-mm" value="50" step="0.5" oninput="updateLabelPreview()"></div>
-        <div class="form-group"><label>Alto (mm)</label><input type="number" id="lbl-h-mm" value="25" step="0.5" oninput="updateLabelPreview()"></div>
-        <div class="form-group"><label>Por fila</label><input type="number" id="lbl-per-row" value="2" min="1" max="10" oninput="updateLabelPreview()"></div>
-        <div class="form-group"><label>Margen sup. (mm)</label><input type="number" id="lbl-mt" value="10" oninput="updateLabelPreview()"></div>
-        <div class="form-group"><label>Margen inf. (mm)</label><input type="number" id="lbl-mb" value="10" oninput="updateLabelPreview()"></div>
-        <div class="form-group"><label>Margen izq/der (mm)</label><input type="number" id="lbl-mx" value="5" oninput="updateLabelPreview()"></div>
-        <div class="form-group"><label>Espacio horiz. (mm)</label><input type="number" id="lbl-gap-h" value="3" step="0.5" oninput="updateLabelPreview()"></div>
-        <div class="form-group"><label>Espacio vert. (mm)</label><input type="number" id="lbl-gap-v" value="3" step="0.5" oninput="updateLabelPreview()"></div>
-        <div class="form-group"><label>Padding (mm)</label><input type="number" id="lbl-pad" value="2" step="0.5" oninput="updateLabelPreview()"></div>
-        <div class="form-group"><label>Fuente (pt)</label><input type="number" id="lbl-font" value="7" min="5" max="20" oninput="updateLabelPreview()"></div>
+      <div class="lbl-cfg-grid" style="margin-bottom:12px; grid-template-columns: 1fr 1fr;">
+        <div class="form-group"><label>Ancho (mm)</label><input type="number" id="lbl-w-mm" value="50" step="1" oninput="updateLabelPreview()"></div>
+        <div class="form-group"><label>Alto (mm)</label><input type="number" id="lbl-h-mm" value="25" step="1" oninput="updateLabelPreview()"></div>
+        <div class="form-group"><label>Separaci&oacute;n vertical (mm)</label><input type="number" id="lbl-gap-v" value="3" step="1" oninput="updateLabelPreview()"></div>
+        <div class="form-group"><label>Etiquetas por fila</label>
+          <select id="lbl-per-row" onchange="updateLabelPreview()" style="width:100%;padding:7px;border:1px solid var(--border);border-radius:var(--radius-sm)">
+            <option value="1">1</option>
+            <option value="2" selected>2</option>
+            <option value="3">3</option>
+            <option value="4">4</option>
+          </select>
+        </div>
+        <div class="form-group" style="grid-column: 1 / -1;"><label>Cant. Copias (por producto)</label><input type="number" id="lbl-copies" value="1" min="1" oninput="updateLabelPreview()"></div>
       </div>
       <div style="background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:10px">
         <p style="font-size:10.5px;font-weight:700;color:var(--text-mid);margin-bottom:7px">VISTA PREVIA</p>
@@ -1512,8 +1514,11 @@ function updateLabelPreview(){
   var prods=productosCache.filter(function(p){return ids.includes(p.id)});
   var wMm=parseFloat(document.getElementById('lbl-w-mm').value)||50;
   var hMm=parseFloat(document.getElementById('lbl-h-mm').value)||25;
-  var fontSz=parseInt(document.getElementById('lbl-font').value)||7;
-  document.getElementById('label-preview').innerHTML=prods.map(function(p){
+  var fontSz=7;
+  var copies=parseInt(document.getElementById('lbl-copies').value)||1;
+  var repeatedProds=[];
+  prods.forEach(function(p){for(var c=0;c<copies;c++)repeatedProds.push(p);});
+  document.getElementById('label-preview').innerHTML=repeatedProds.map(function(p){
     return '<div style="width:'+Math.min(wMm,100)+'mm;height:'+hMm+'mm;border:1.5px solid var(--border-strong);border-radius:3px;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:2px;font-family:monospace;font-size:'+fontSz+'pt;text-align:center;overflow:hidden;background:#fff;box-sizing:border-box">'
       +'<div style="font-weight:700;font-size:'+(fontSz+1)+'pt;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;width:100%">'+p.nombre+'</div>'
       +'<div style="color:#0066FF;font-weight:800;font-size:'+(fontSz+3)+'pt">'+fmt(parseFloat(p.precio_venta))+'</div>'
@@ -1524,12 +1529,16 @@ function doPrintLabels(){
   var ids=getSelectedProducts();var prods=productosCache.filter(function(p){return ids.includes(p.id)});
   var wMm=document.getElementById('lbl-w-mm').value,hMm=document.getElementById('lbl-h-mm').value;
   var perRow=parseInt(document.getElementById('lbl-per-row').value)||2;
-  var mt=document.getElementById('lbl-mt').value,mb=document.getElementById('lbl-mb').value,mx=document.getElementById('lbl-mx').value;
-  var gapH=document.getElementById('lbl-gap-h').value,gapV=document.getElementById('lbl-gap-v').value;
-  var pad=document.getElementById('lbl-pad').value,fontSz=document.getElementById('lbl-font').value;
-  var h='<html><head><title>Etiquetas</title><style>@page{margin:'+mt+'mm '+mx+'mm '+mb+'mm '+mx+'mm}body{margin:0;padding:0}.wrap{display:grid;grid-template-columns:repeat('+perRow+','+wMm+'mm);gap:'+gapV+'mm '+gapH+'mm}.lbl{width:'+wMm+'mm;height:'+hMm+'mm;border:0.5pt solid #bbb;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:'+pad+'mm;font-family:monospace;font-size:'+fontSz+'pt;text-align:center;overflow:hidden;box-sizing:border-box;page-break-inside:avoid}svg{width:100%;height:auto}</style><script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.6/dist/JsBarcode.all.min.js"><\/script></head><body><div class="wrap">';
-  prods.forEach(function(p,i){h+='<div class="lbl"><div style="font-weight:700;font-size:'+(parseInt(fontSz)+1)+'pt;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;width:100%">'+p.nombre+'</div><div style="font-size:'+(parseInt(fontSz)+3)+'pt;font-weight:800;color:#0066FF">'+fmt(parseFloat(p.precio_venta))+'</div><svg id="lbl'+i+'"></svg></div>'});
-  h+='</div><script>window.onload=function(){'+prods.map(function(p,i){return'JsBarcode(\'#lbl'+i+'\',\''+p.id+'\',{format:\'CODE128\',displayValue:true,height:22,fontSize:7})'}).join(';')+';setTimeout(window.print,900)}<\/script></body></html>';
+  var gapV=document.getElementById('lbl-gap-v').value;
+  var copies=parseInt(document.getElementById('lbl-copies').value)||1;
+  var repeatedProds=[];
+  prods.forEach(function(p){for(var c=0;c<copies;c++)repeatedProds.push(p);});
+  
+  var h='<html><head><title>Etiquetas NP GM61</title><style>@page{size:104mm auto;margin:0}body{margin:0;padding:2mm;width:100mm;background:#fff;color:#000}.wrap{display:grid;grid-template-columns:repeat('+perRow+','+wMm+'mm);gap:'+gapV+'mm 2mm;justify-content:center}.lbl{width:'+wMm+'mm;height:'+hMm+'mm;border:1px dashed #000;border-radius:4px;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:2mm;font-family:monospace;font-size:7pt;text-align:center;overflow:hidden;box-sizing:border-box;page-break-inside:avoid}svg{width:100%;height:auto;max-height:60%}</style><script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.6/dist/JsBarcode.all.min.js"><\/script></head><body><div class="wrap">';
+  repeatedProds.forEach(function(p,i){
+    h+='<div class="lbl"><div style="font-weight:700;font-size:8pt;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;width:100%">'+p.nombre+'</div><div style="font-size:10pt;font-weight:800">'+fmt(parseFloat(p.precio_venta))+'</div><svg id="lbl'+i+'"></svg></div>';
+  });
+  h+='</div><script>window.onload=function(){'+repeatedProds.map(function(p,i){return'JsBarcode(\'#lbl'+i+'\',\''+p.id+'\',{format:\'CODE128\',displayValue:true,height:22,fontSize:9,margin:0})'}).join(';')+';setTimeout(window.print,900)}<\/script></body></html>';
   var w=window.open('','_blank');w.document.write(h);w.document.close();closeModal('modal-etiquetas');
 }
 
