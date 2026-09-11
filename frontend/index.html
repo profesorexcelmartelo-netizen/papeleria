@@ -153,16 +153,17 @@ tr.anulada-row td{opacity:.55}tr.anulada-row{background:#fff5f5!important}
   @page{size:80mm auto;margin:3mm 2mm}
   body *{visibility:hidden}
   #print-area,#print-area *{visibility:visible}
-  #print-area{position:fixed;top:0;left:0;width:76mm}
+  #print-area{position:absolute;top:0;left:0;width:76mm;color:#000!important}
   .no-print{display:none!important}
 }
-.print-ticket{font-family:'Courier New',monospace;width:76mm;font-size:12px;line-height:1.6;color:#000}
+.print-ticket{font-family:'Courier New',monospace;width:76mm;font-size:13px;line-height:1.4;color:#000!important;font-weight:bold!important;-webkit-font-smoothing:none;text-rendering:optimizeSpeed}
+.print-ticket *{color:#000!important;font-weight:bold!important}
 .print-ticket .t-center{text-align:center}
-.print-ticket .t-bold{font-weight:bold}
-.print-ticket .t-big{font-size:16px;font-weight:bold}
-.print-ticket .t-sep{border:none;border-top:1px dashed #000;margin:5px 0;display:block}
+.print-ticket .t-bold{font-weight:900!important}
+.print-ticket .t-big{font-size:17px;font-weight:900!important}
+.print-ticket .t-sep{border:none;border-top:2px dashed #000;margin:5px 0;display:block}
 .print-ticket .t-row{display:flex;justify-content:space-between;width:100%}
-.print-ticket p{margin:1px 0;font-size:12px}
+.print-ticket p{margin:1px 0;font-size:13px}
 /* PIN */
 .pin-btn{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);color:#fff;font-size:20px;font-weight:700;border-radius:10px;padding:16px;cursor:pointer;transition:all .15s;font-family:'Segoe UI',sans-serif}
 .pin-btn:hover{background:rgba(0,102,255,.4);border-color:#0066FF}
