@@ -1639,8 +1639,9 @@ async function exportarTodasLasVentas(){
       if(v.metodos_pago&&v.metodos_pago.length>0){
         mpStr=v.metodos_pago.map(function(m){return m.metodo+': '+m.monto}).join(' | ');
       }else{mpStr=v.metodo_pago||'';}
-      if(v.productos&&v.productos.length>0){
-        v.productos.forEach(function(p){
+      var prodsList = v.productos || v.venta_productos || [];
+      if(prodsList.length>0){
+        prodsList.forEach(function(p){
           rows.push([v.folio, f, v.hora||'', est, v.cliente||'', v.observaciones||'', p.nombre||'', p.cantidad||0, p.precio_unitario||0, p.subtotal||0, pcount===0?mpStr:'', pcount===0?v.total:'', pcount===0?(v.cambio||0):'']);
           pcount++;
         });
