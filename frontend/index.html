@@ -831,12 +831,12 @@ function printTicket(venta){
 
   // Header negocio
   addLine(nombre,10,true,true);
-  if(dir)addLine(dir,7,false,true);
-  if(tel)addLine('Tel: '+tel,7,false,true);
+  if(dir)addLine(dir,7,false,false);
+  if(tel)addLine('Tel: '+tel,7,false,false);
   y+=1;
-  addLine(venta.fecha+' '+venta.hora,7,false,true);
-  addLine(venta.folio,8,true,true);
-  addLine('Cliente: '+venta.cliente,7,false,true);
+  addLine(venta.fecha+' '+venta.hora,7,false,false);
+  addLine(venta.folio,8,true,false);
+  addLine('Cliente: '+venta.cliente,7,false,false);
   y+=1;
   addSep();
 
@@ -904,10 +904,10 @@ function printTicket(venta){
 
   if(cfg.logo){try{var iW=40,iH=15,iX=(pw-iW)/2;doc2.addImage(cfg.logo,'PNG',iX,y,iW,iH,undefined,'FAST');y+=iH+2;}catch(e){}}
   al(nombre,10,true,true);
-  if(dir)al(dir,7,false,true);
-  if(tel)al('Tel: '+tel,7,false,true);
-  y+=1;al(venta.fecha+' '+venta.hora,7,false,true);
-  al(venta.folio,8,true,true);al('Cliente: '+venta.cliente,7,false,true);y+=1;as2();
+  if(dir)al(dir,7,false,false);
+  if(tel)al('Tel: '+tel,7,false,false);
+  y+=1;al(venta.fecha+' '+venta.hora,7,false,false);
+  al(venta.folio,8,true,false);al('Cliente: '+venta.cliente,7,false,false);y+=1;as2();
 
   prods.forEach(function(p){
     var np=p.nombre||'';var cant=parseInt(p.cantidad||0);
