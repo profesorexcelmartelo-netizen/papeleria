@@ -669,8 +669,9 @@ var bcTimer=null;
 function handleBarcodeScan(val){
   clearTimeout(bcTimer);
   bcTimer=setTimeout(function(){
-    if(val.length>=6){
-      var p=productosCache.find(function(x){return x.id===val&&x.stock>0});
+    var scanned = val.trim();
+    if(scanned.length > 0){
+      var p=productosCache.find(function(x){return x.id===scanned&&x.stock>0});
       if(p){addToCart(p.id);toast(p.nombre+' agregado','success',1500)}
       else toast('Código no encontrado o sin stock','error');
       document.getElementById('barcode-input').value='';
