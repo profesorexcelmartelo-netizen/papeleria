@@ -1571,8 +1571,7 @@ function doPrintLabels(){
   prods.forEach(function(p){for(var c=0;c<copies;c++)repeatedProds.push(p);});
   
   var totalWidthMm = (wMm * perRow) + (gapH * (perRow - 1)) + marginL + marginR; 
-  var rows = Math.ceil(repeatedProds.length / perRow);
-  var totalHeightMm = (hMm * rows) + (gapV * (rows - 1)) + marginT + 2;
+  var pageHeightMm = hMm + marginT;
   
   var btn = document.querySelector('#modal-etiquetas .btn-primary');
   var origText = btn.innerHTML;
@@ -1582,8 +1581,8 @@ function doPrintLabels(){
   setTimeout(function(){
     try {
       var { jsPDF } = window.jspdf;
-      var orient = totalWidthMm > totalHeightMm ? 'l' : 'p';
-      var doc = new jsPDF({ orientation: orient, unit: 'mm', format: [totalWidthMm, totalHeightMm] });
+      var orient = totalWidthMm > pageHeightMm ? 'l' : 'p';
+      var doc = new jsPDF({ orientation: orient, unit: 'mm', format: [totalWidthMm, pageHeightMm] });
       
       doc.setFont("helvetica", "bold");
       
@@ -1591,8 +1590,12 @@ function doPrintLabels(){
         var row = Math.floor(i / perRow);
         var col = i % perRow;
         
+        if (row > 0 && col === 0) {
+          doc.addPage([totalWidthMm, pageHeightMm], orient);
+        }
+        
         var startX = marginL + col * (wMm + gapH);
-        var startY = marginT + row * (hMm + gapV);
+        var startY = marginT;
         
         doc.setFontSize(fontSz);
         var shortName = p.nombre.length > 25 ? p.nombre.substring(0, 25) + '...' : p.nombre; 
