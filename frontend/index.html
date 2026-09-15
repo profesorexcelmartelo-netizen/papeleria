@@ -3,8 +3,9 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>POS Papelería</title>
+<title>POS Papeleria</title>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 
 <style>
 :root{
@@ -1565,13 +1566,58 @@ function doPrintLabels(){
   prods.forEach(function(p){for(var c=0;c<copies;c++)repeatedProds.push(p);});
   
   var totalWidthMm = (parseFloat(wMm) * perRow) + (parseFloat(gapH) * (perRow - 1)) + parseFloat(marginL) + parseFloat(marginR); 
+  var rows = Math.ceil(repeatedProds.length / perRow);
+  var totalHeightMm = (parseFloat(hMm) * rows) + (parseFloat(gapV) * (rows - 1)) + parseFloat(marginT) + 2;
   
-  var h='<html><head><title>Etiquetas NP GM61</title><style>@page{size:'+totalWidthMm+'mm auto;margin:0}body{margin:0;padding-top:'+marginT+'mm;padding-bottom:2mm;padding-right:'+marginR+'mm;padding-left:'+marginL+'mm;width:'+totalWidthMm+'mm;background:#fff;color:#000;box-sizing:border-box;}.wrap{display:grid;grid-template-columns:repeat('+perRow+','+wMm+'mm);gap:'+gapV+'mm '+gapH+'mm;justify-content:start}.lbl{width:'+wMm+'mm;height:'+hMm+'mm;border:1px dashed #000;border-radius:4px;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:1mm;font-family:monospace;font-size:'+fontSz+'pt;text-align:center;overflow:hidden;box-sizing:border-box;page-break-inside:avoid}svg{width:100%;height:auto;max-height:60%}</style><script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.6/dist/JsBarcode.all.min.js"><\/script></head><body><div class="wrap">';
-  repeatedProds.forEach(function(p,i){
-    h+='<div class="lbl"><div style="font-weight:700;font-size:'+(parseInt(fontSz)+1)+'pt;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;width:100%;line-height:1.2">'+p.nombre+'</div><div style="font-size:'+(parseInt(fontSz)+3)+'pt;font-weight:800;margin:2px 0;">'+fmt(parseFloat(p.precio_venta))+'</div><svg id="lbl'+i+'"></svg></div>';
+  var container = document.createElement('div');
+  container.style.position = 'absolute';
+  container.style.left = '-9999px';
+  container.style.top = '0';
+  
+  var html = '<div id="pdf-wrapper" style="width:'+totalWidthMm+'mm;height:'+totalHeightMm+'mm;background:#fff;color:#000;box-sizing:border-box;padding-top:'+marginT+'mm;padding-bottom:2mm;padding-right:'+marginR+'mm;padding-left:'+marginL+'mm;font-size:0;line-height:0;overflow:hidden;">';
+  
+  repeatedProds.forEach(function(p, i) {
+    var isLastInRow = ((i + 1) % perRow === 0);
+    var mr = isLastInRow ? 0 : gapH;
+    var mb = gapV;
+    
+    html += '<div style="width:'+wMm+'mm;height:'+hMm+'mm;border:1px dashed #000;border-radius:4px;display:inline-flex;flex-direction:column;align-items:center;justify-content:center;padding:1mm;font-family:monospace;font-size:'+fontSz+'pt;text-align:center;overflow:hidden;box-sizing:border-box;background:#fff;margin-right:'+mr+'mm;margin-bottom:'+mb+'mm;vertical-align:top;line-height:normal;">';
+    html += '<div style="font-weight:700;font-size:'+(parseInt(fontSz)+1)+'pt;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;width:100%;line-height:1.2">'+p.nombre+'</div>';
+    html += '<div style="font-size:'+(parseInt(fontSz)+3)+'pt;font-weight:800;margin:2px 0;">'+fmt(parseFloat(p.precio_venta))+'</div>';
+    html += '<svg id="pdf-lbl'+i+'" style="width:100%;height:auto;max-height:60%"></svg>';
+    html += '</div>';
   });
-  h+='</div><script>window.onload=function(){'+repeatedProds.map(function(p,i){return'JsBarcode(\'#lbl'+i+'\',\''+p.id+'\',{format:\'CODE128\',displayValue:true,height:22,fontSize:'+fontSz+',margin:0})'}).join(';')+';setTimeout(window.print,900)}<\/script></body></html>';
-  var w=window.open('','_blank');w.document.write(h);w.document.close();closeModal('modal-etiquetas');
+  html += '</div>';
+  
+  container.innerHTML = html;
+  document.body.appendChild(container);
+  
+  var btn = document.querySelector('#modal-etiquetas .btn-primary');
+  var origText = btn.innerHTML;
+  btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Generando PDF...';
+  btn.disabled = true;
+  
+  repeatedProds.forEach(function(p, i) {
+    JsBarcode('#pdf-lbl'+i, p.id, {format:'CODE128', displayValue:true, height:22, fontSize:fontSz, margin:0});
+  });
+  
+  var element = document.getElementById('pdf-wrapper');
+  var opt = {
+    margin:       0,
+    filename:     'Etiquetas_Inventario.pdf',
+    image:        { type: 'jpeg', quality: 1 },
+    html2canvas:  { scale: 4, useCORS: true },
+    jsPDF:        { unit: 'mm', format: [totalWidthMm, totalHeightMm], orientation: 'portrait' }
+  };
+  
+  setTimeout(function(){
+    html2pdf().set(opt).from(element).save().then(function() {
+      document.body.removeChild(container);
+      btn.innerHTML = origText;
+      btn.disabled = false;
+      closeModal('modal-etiquetas');
+    });
+  }, 500);
 }
 
 /* ═══ CONFIG ═══ */
