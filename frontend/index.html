@@ -468,7 +468,7 @@ tr.anulada-row td{opacity:.55}tr.anulada-row{background:#fff5f5!important}
         <div class="form-group" style="grid-column: 1 / -1;"><label>Cant. Copias (por producto)</label><input type="number" id="lbl-copies" value="1" min="1" oninput="updateLabelPreview()"></div>
       </div>
       <div style="background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:10px">
-        <p style="font-size:10.5px;font-weight:700;color:var(--text-mid);margin-bottom:7px">VISTA PREVIA (Proporcional a 100mm de ancho)</p>
+        <p style="font-size:10.5px;font-weight:700;color:var(--text-mid);margin-bottom:7px" id="lbl-preview-title">VISTA PREVIA</p>
         <div id="label-preview" style="display:grid;gap:2px;max-height:220px;overflow-y:auto;overflow-x:hidden;justify-content:center;padding:5px;background:#f0f0f0;border:1px dashed #ccc;"></div>
       </div>
     </div>
@@ -1527,6 +1527,8 @@ function updateLabelPreview(){
   // Calculate scale so 100mm fits in the preview box (max ~500px wide)
   // Assuming 100mm is ~378px. We'll use a fixed scale 1mm = 3.5px for preview.
   var scale = 3.5;
+  var totalWidthMm = (wMm * perRow) + (gapH * (perRow - 1));
+  document.getElementById('lbl-preview-title').innerText = 'VISTA PREVIA (Ancho total calculable: ' + totalWidthMm + 'mm + márgenes)';
   
   var prev = document.getElementById('label-preview');
   prev.style.gridTemplateColumns = 'repeat('+perRow+', '+(wMm*scale)+'px)';
