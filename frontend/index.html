@@ -1582,7 +1582,8 @@ function doPrintLabels(){
   setTimeout(function(){
     try {
       var { jsPDF } = window.jspdf;
-      var doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: [totalWidthMm, totalHeightMm] });
+      var orient = totalWidthMm > totalHeightMm ? 'l' : 'p';
+      var doc = new jsPDF({ orientation: orient, unit: 'mm', format: [totalWidthMm, totalHeightMm] });
       
       doc.setFont("helvetica", "bold");
       
