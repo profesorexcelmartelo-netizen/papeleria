@@ -1550,7 +1550,9 @@ function doPrintLabels(){
   var repeatedProds=[];
   prods.forEach(function(p){for(var c=0;c<copies;c++)repeatedProds.push(p);});
   
-  var h='<html><head><title>Etiquetas NP GM61</title><style>@page{size:104mm auto;margin:0}body{margin:0;padding:2mm;width:100mm;background:#fff;color:#000}.wrap{display:grid;grid-template-columns:repeat('+perRow+','+wMm+'mm);gap:'+gapV+'mm '+gapH+'mm;justify-content:center}.lbl{width:'+wMm+'mm;height:'+hMm+'mm;border:1px dashed #000;border-radius:4px;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:2mm;font-family:monospace;font-size:'+fontSz+'pt;text-align:center;overflow:hidden;box-sizing:border-box;page-break-inside:avoid}svg{width:100%;height:auto;max-height:60%}</style><script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.6/dist/JsBarcode.all.min.js"><\/script></head><body><div class="wrap">';
+  var totalWidthMm = (parseFloat(wMm) * perRow) + (parseFloat(gapH) * (perRow - 1)) + 4;
+  
+  var h='<html><head><title>Etiquetas NP GM61</title><style>@page{size:'+totalWidthMm+'mm auto;margin:0}body{margin:0;padding:2mm;width:'+totalWidthMm+'mm;background:#fff;color:#000;box-sizing:border-box;}.wrap{display:grid;grid-template-columns:repeat('+perRow+','+wMm+'mm);gap:'+gapV+'mm '+gapH+'mm;justify-content:center}.lbl{width:'+wMm+'mm;height:'+hMm+'mm;border:1px dashed #000;border-radius:4px;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:2mm;font-family:monospace;font-size:'+fontSz+'pt;text-align:center;overflow:hidden;box-sizing:border-box;page-break-inside:avoid}svg{width:100%;height:auto;max-height:60%}</style><script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.6/dist/JsBarcode.all.min.js"><\/script></head><body><div class="wrap">';
   repeatedProds.forEach(function(p,i){
     h+='<div class="lbl"><div style="font-weight:700;font-size:'+(parseInt(fontSz)+1)+'pt;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;width:100%;line-height:1.2">'+p.nombre+'</div><div style="font-size:'+(parseInt(fontSz)+3)+'pt;font-weight:800;margin:2px 0;">'+fmt(parseFloat(p.precio_venta))+'</div><svg id="lbl'+i+'"></svg></div>';
   });
