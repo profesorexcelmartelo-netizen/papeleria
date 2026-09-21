@@ -454,8 +454,10 @@ tr.anulada-row td{opacity:.55}tr.anulada-row{background:#fff5f5!important}
     <div class="modal-header"><span><i class="fa-solid fa-tag"></i> Configurar Etiquetas</span><button class="modal-close" onclick="closeModal('modal-etiquetas')"><i class="fa-solid fa-xmark"></i></button></div>
     <div class="modal-body">
       <div class="lbl-cfg-grid" style="margin-bottom:12px; grid-template-columns: 1fr 1fr;">
-        <div class="form-group"><label>Ancho (mm)</label><input type="number" id="lbl-w-mm" value="50" step="1" oninput="updateLabelPreview()"></div>
-        <div class="form-group"><label>Alto (mm)</label><input type="number" id="lbl-h-mm" value="25" step="1" oninput="updateLabelPreview()"></div>
+        <div class="form-group"><label>Ancho Pág. (mm)</label><input type="number" id="lbl-page-w" value="100" step="1" oninput="updateLabelPreview()" placeholder="Auto"></div>
+        <div class="form-group"><label>Alto Pág. (mm)</label><input type="number" id="lbl-page-h" value="25" step="1" oninput="updateLabelPreview()" placeholder="Auto"></div>
+        <div class="form-group"><label>Ancho Etiqueta (mm)</label><input type="number" id="lbl-w-mm" value="31" step="1" oninput="updateLabelPreview()"></div>
+        <div class="form-group"><label>Alto Etiqueta (mm)</label><input type="number" id="lbl-h-mm" value="25" step="1" oninput="updateLabelPreview()"></div>
         <div class="form-group"><label>Separaci&oacute;n vertical (mm)</label><input type="number" id="lbl-gap-v" value="3" step="1" oninput="updateLabelPreview()"></div>
         <div class="form-group"><label>Separaci&oacute;n horizontal (mm)</label><input type="number" id="lbl-gap-h" value="2" step="1" oninput="updateLabelPreview()"></div>
         <div class="form-group"><label>Margen Arriba (mm)</label><input type="number" id="lbl-margin-t" value="2" step="1" oninput="updateLabelPreview()"></div>
@@ -464,12 +466,12 @@ tr.anulada-row td{opacity:.55}tr.anulada-row{background:#fff5f5!important}
         <div class="form-group"><label>Etiquetas por fila</label>
           <select id="lbl-per-row" onchange="updateLabelPreview()" style="width:100%;padding:7px;border:1px solid var(--border);border-radius:var(--radius-sm)">
             <option value="1">1</option>
-            <option value="2" selected>2</option>
-            <option value="3">3</option>
+            <option value="2">2</option>
+            <option value="3" selected>3</option>
             <option value="4">4</option>
           </select>
         </div>
-        <div class="form-group"><label>Tama&ntilde;o Fuente (pt)</label><input type="number" id="lbl-font" value="7" min="5" max="20" oninput="updateLabelPreview()"></div>
+        <div class="form-group"><label>Tama&ntilde;o Fuente (pt)</label><input type="number" id="lbl-font" value="6" min="5" max="20" oninput="updateLabelPreview()"></div>
         <div class="form-group" style="grid-column: 1 / -1;"><label>Cant. Copias (por producto)</label><input type="number" id="lbl-copies" value="1" min="1" oninput="updateLabelPreview()"></div>
       </div>
       <div style="background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:10px">
@@ -1536,8 +1538,13 @@ function updateLabelPreview(){
   // Calculate scale so 100mm fits in the preview box (max ~500px wide)
   // Assuming 100mm is ~378px. We'll use a fixed scale 1mm = 3.5px for preview.
   var scale = 3.5;
-  var totalWidthMm = (wMm * perRow) + (gapH * (perRow - 1)) + marginL + marginR;
-  document.getElementById('lbl-preview-title').innerText = 'VISTA PREVIA (Ancho total calculable: ' + totalWidthMm + 'mm + m\u00E1rgenes)';
+  var pageW = parseFloat(document.getElementById('lbl-page-w').value)||0;
+  var pageH = parseFloat(document.getElementById('lbl-page-h').value)||0;
+  var calcW = (wMm * perRow) + (gapH * (perRow - 1)) + marginL + marginR;
+  var calcH = hMm + marginT;
+  var totalWidthMm = pageW > 0 ? pageW : calcW;
+  var totalHeightMm = pageH > 0 ? pageH : calcH;
+  document.getElementById('lbl-preview-title').innerText = 'VISTA PREVIA (Página final: ' + totalWidthMm + 'x' + totalHeightMm + ' mm)';
   
   var prev = document.getElementById('label-preview');
   prev.style.gridTemplateColumns = 'repeat('+perRow+', '+(wMm*scale)+'px)';
@@ -1571,8 +1578,12 @@ function doPrintLabels(){
   var repeatedProds=[];
   prods.forEach(function(p){for(var c=0;c<copies;c++)repeatedProds.push(p);});
   
-  var totalWidthMm = (wMm * perRow) + (gapH * (perRow - 1)) + marginL + marginR; 
-  var pageHeightMm = hMm + marginT;
+  var pageW = parseFloat(document.getElementById('lbl-page-w').value)||0;
+  var pageH = parseFloat(document.getElementById('lbl-page-h').value)||0;
+  var calcW = (wMm * perRow) + (gapH * (perRow - 1)) + marginL + marginR;
+  var calcH = hMm + marginT;
+  var totalWidthMm = pageW > 0 ? pageW : calcW; 
+  var pageHeightMm = pageH > 0 ? pageH : calcH;
   
   var btn = document.querySelector('#modal-etiquetas .btn-primary');
   var origText = btn.innerHTML;
