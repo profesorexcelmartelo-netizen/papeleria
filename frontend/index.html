@@ -1555,7 +1555,7 @@ function updateLabelPreview(){
   
   prev.innerHTML=repeatedProds.map(function(p){
     return '<div style="width:'+(wMm*scale)+'px;height:'+(hMm*scale)+'px;border:1px solid #000;border-radius:4px;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:4px;font-family:monospace;font-size:'+fontSz+'pt;text-align:center;overflow:hidden;background:#fff;box-sizing:border-box">'
-      +'<div style="font-weight:700;font-size:'+(fontSz+1)+'pt;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;width:100%;line-height:1.2">'+p.nombre+'</div>'
+      +'<div style="font-weight:700;font-size:'+(fontSz+1)+'pt;overflow:hidden;width:85%;line-height:1.1;max-height:2.4em;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;white-space:normal">'+p.nombre+'</div>'
       +'<div style="color:#000;font-weight:800;font-size:'+(fontSz+2)+'pt;margin:2px 0;">'+fmt(parseFloat(p.precio_venta))+'</div>'
       +'<div style="font-size:'+(fontSz-1)+'pt;color:#555;font-family:barcode;">|||'+p.id+'|||</div></div>';
   }).join('');
@@ -1610,20 +1610,28 @@ function doPrintLabels(){
         var startY = marginT;
         
         doc.setFontSize(fontSz);
-        var shortName = p.nombre.length > 25 ? p.nombre.substring(0, 25) + '...' : p.nombre; 
-        doc.text(shortName, startX + (wMm/2), startY + 5, {align: 'center'});
+        var bcWidth = wMm * 0.85; 
+        var lines = doc.splitTextToSize(p.nombre, bcWidth);
+        if (lines.length > 2) { 
+          lines = lines.slice(0, 2); 
+          if(lines[1].length > 3) lines[1] = lines[1].substring(0, lines[1].length - 3) + '...'; 
+        }
+        
+        var nameY = startY + 3.5;
+        lines.forEach(function(line, idx) {
+          doc.text(line, startX + (wMm/2), nameY + (idx * 2.5), {align: 'center'});
+        });
         
         doc.setFontSize(fontSz + 2);
-        doc.text(fmt(parseFloat(p.precio_venta)), startX + (wMm/2), startY + 10, {align: 'center'});
+        doc.text(fmt(parseFloat(p.precio_venta)), startX + (wMm/2), startY + 11.5, {align: 'center'});
         
         var canvas = document.createElement('canvas');
         JsBarcode(canvas, p.id, {format:'CODE128', displayValue:true, height:35, fontSize:14, margin:0, background:'#ffffff'});
         var imgData = canvas.toDataURL("image/jpeg", 1.0);
         
-        var bcWidth = wMm * 0.85; 
         var bcHeight = hMm * 0.45; 
         var bcX = startX + (wMm - bcWidth)/2;
-        var bcY = startY + 12;
+        var bcY = startY + 13.5;
         
         doc.addImage(imgData, 'JPEG', bcX, bcY, bcWidth, bcHeight);
       });
