@@ -1554,7 +1554,7 @@ function updateLabelPreview(){
   prev.style.paddingRight = (marginR*scale)+'px';
   
   prev.innerHTML=repeatedProds.map(function(p){
-    return '<div style="width:'+(wMm*scale)+'px;height:'+(hMm*scale)+'px;border:1px solid #000;border-radius:4px;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:4px;font-family:\'DejaVu Sans\',sans-serif;font-size:'+fontSz+'pt;text-align:center;overflow:hidden;background:#fff;box-sizing:border-box">'
+    return '<div style="width:'+(wMm*scale)+'px;height:'+(hMm*scale)+'px;border:1px solid #000;border-radius:4px;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:4px;font-family:monospace;font-size:'+fontSz+'pt;text-align:center;overflow:hidden;background:#fff;box-sizing:border-box">'
       +'<div style="font-weight:700;font-size:'+(fontSz+1)+'pt;overflow:hidden;width:85%;line-height:1.1;max-height:2.4em;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;white-space:normal">'+p.nombre+'</div>'
       +'<div style="color:#000;font-weight:800;font-size:'+(fontSz+2)+'pt;margin:2px 0;">'+fmt(parseFloat(p.precio_venta))+'</div>'
       +'<div style="font-size:'+(fontSz-1)+'pt;color:#555;font-family:barcode;">|||'+p.id+'|||</div></div>';
@@ -1590,28 +1590,13 @@ function doPrintLabels(){
   btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Generando PDF...';
   btn.disabled = true;
   
-  setTimeout(async function(){
+  setTimeout(function(){
     try {
       var { jsPDF } = window.jspdf;
       var orient = totalWidthMm > pageHeightMm ? 'l' : 'p';
       var doc = new jsPDF({ orientation: orient, unit: 'mm', format: [totalWidthMm, pageHeightMm] });
       
-      try {
-        var fontRes = await fetch('https://cdn.jsdelivr.net/npm/dejavu-fonts-ttf@2.37.6/ttf/DejaVuSans-Bold.ttf');
-        var fontBuffer = await fontRes.arrayBuffer();
-        var bytes = new Uint8Array(fontBuffer);
-        var binary = '';
-        for (var i = 0; i < bytes.byteLength; i++) {
-          binary += String.fromCharCode(bytes[i]);
-        }
-        var base64 = window.btoa(binary);
-        doc.addFileToVFS('DejaVuSans-Bold.ttf', base64);
-        doc.addFont('DejaVuSans-Bold.ttf', 'DejaVuSans', 'bold');
-        doc.setFont('DejaVuSans', 'bold');
-      } catch(e) {
-        console.error("Error descargando DejaVu Sans:", e);
-        doc.setFont("helvetica", "bold");
-      }
+      doc.setFont("helvetica", "bold");
       
       repeatedProds.forEach(function(p, i) {
         var row = Math.floor(i / perRow);
