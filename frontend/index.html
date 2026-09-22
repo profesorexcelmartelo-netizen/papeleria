@@ -1637,7 +1637,7 @@ function doPrintLabels(){
         });
         
         doc.setFontSize(fontSz + 2);
-        doc.text(fmt(parseFloat(p.precio_venta)), startX + (wMm/2), startY + 11.5, {align: 'center'});
+        doc.text(fmt(parseFloat(p.precio_venta)), startX + (wMm/2), startY + 9.0, {align: 'center'});
         
         var canvas = document.createElement('canvas');
         JsBarcode(canvas, p.id, {format:'CODE128', displayValue:true, height:35, fontSize:14, margin:0, background:'#ffffff'});
@@ -1645,7 +1645,7 @@ function doPrintLabels(){
         
         var bcHeight = hMm * 0.45; 
         var bcX = startX + (wMm - bcWidth)/2;
-        var bcY = startY + 13.5;
+        var bcY = startY + 11.0;
         
         doc.addImage(imgData, 'JPEG', bcX, bcY, bcWidth, bcHeight);
       });
