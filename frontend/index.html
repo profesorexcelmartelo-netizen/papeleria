@@ -1541,12 +1541,6 @@ function updateLabelPreview(){
   var pageW = parseFloat(document.getElementById('lbl-page-w').value)||0;
   var pageH = parseFloat(document.getElementById('lbl-page-h').value)||0;
 
-  if (pageW > 0 && perRow > 1) {
-    var available = pageW - marginL - marginR;
-    gapH = (available - (wMm * perRow)) / (perRow - 1);
-    if(gapH < 0) gapH = 0;
-  }
-
   var calcW = (wMm * perRow) + (gapH * (perRow - 1)) + marginL + marginR;
   var calcH = hMm + marginT;
   var totalWidthMm = pageW > 0 ? pageW : calcW;
@@ -1588,12 +1582,6 @@ function doPrintLabels(){
   var pageW = parseFloat(document.getElementById('lbl-page-w').value)||0;
   var pageH = parseFloat(document.getElementById('lbl-page-h').value)||0;
   
-  if (pageW > 0 && perRow > 1) {
-    var available = pageW - marginL - marginR;
-    gapH = (available - (wMm * perRow)) / (perRow - 1);
-    if(gapH < 0) gapH = 0;
-  }
-  
   var calcW = (wMm * perRow) + (gapH * (perRow - 1)) + marginL + marginR;
   var calcH = hMm + marginT;
   var totalWidthMm = pageW > 0 ? pageW : calcW; 
@@ -1624,7 +1612,7 @@ function doPrintLabels(){
         var startY = marginT;
         
         doc.setFontSize(fontSz);
-        var bcWidth = wMm * 0.95; 
+        var bcWidth = wMm * 0.92; 
         var lines = doc.splitTextToSize(p.nombre, bcWidth);
         if (lines.length > 2) { 
           lines = lines.slice(0, 2); 
